@@ -1,7 +1,5 @@
 <?php
     date_default_timezone_set('America/Araguaina');
-    ini_set('display_errors', 0);
-    error_reporting(0);
 
     // Carrega as variáveis de ambiente do arquivo .env
     $env = parse_ini_file('.env');

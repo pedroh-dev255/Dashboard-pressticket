@@ -15,4 +15,8 @@ function showPopin(message, type = 'success') {
     // Fecha automaticamente após 5 segundos
     setTimeout(() => popin.classList.remove('show'), 3000);
 }
-  
+
+function closePopin() {
+    const popin = document.getElementById('popin');
+    popin.classList.remove('show'); // Remove a classe 'show', fechando o popup
+}
