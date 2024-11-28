@@ -1,0 +1,6 @@
+#Dados da conexão do Banco Mysql do Press-Ticket
+DB_HOST=
+DB_USER=
+DB_PASS=
+DB_NAME=
+
