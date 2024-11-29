@@ -20,6 +20,8 @@
     $userNames = [];
     $quantities = [];
     $ticketDias = [];
+    $queueNames = [];
+    $queueQuantities = [];
 
     if (isset($_GET['data1']) && isset($_GET['data2'])) {
         $sql = "
@@ -100,7 +102,9 @@
         $stmt->bind_param('ss', $_GET['data1'], $_GET['data2']);
         $stmt->execute();
         $result_ticket_dia = $stmt->get_result();
-        while ($rowt = mysqli_fetch_assoc($result_ticket_dia)) {
+        while ($rowtd = mysqli_fetch_assoc($result_ticket_dia)) {
+            $queueNames[] = $rowtd['nome'];
+            $queueQuantities[] = $rowtd['quantidade_de_tickets'];
         }
 
     } else {
@@ -116,6 +120,7 @@
                 Users ON Tickets.userId = Users.id 
             WHERE 
                 Tickets.status = 'closed'
+                AND Tickets.updatedAt BETWEEN '".date('Y-m-d', strtotime('-30 days'))."' AND '".date('Y-m-d')."'
             GROUP BY 
                 Tickets.status, Users.name, Users.id
             ORDER BY
@@ -137,6 +142,8 @@
                 COUNT(*) AS quantidade_de_tickets
             FROM 
                 Tickets
+            WHERE
+                createdAt BETWEEN '".date('Y-m-d', strtotime('-30 days'))."' AND '".date('Y-m-d')."'
             GROUP BY 
                 dia
             ORDER BY 
@@ -155,6 +162,33 @@
 
         /* -------------------------------------------------------------------------------------------------------------- */
 
+        $tp_fila = "
+            SELECT 
+                Tickets.queueId as tipo, 
+                Queues.name as nome,
+                COUNT(*) AS quantidade_de_tickets
+            FROM 
+                Tickets
+            INNER JOIN
+                Queues
+            ON	
+                Tickets.queueId = Queues.id
+            WHERE
+                Tickets.updatedAt BETWEEN '".date('Y-m-d', strtotime('-30 days'))."' AND '".date('Y-m-d')."' AND
+                Tickets.status = 'closed'
+            GROUP BY 
+                tipo
+            ORDER BY 
+                quantidade_de_tickets DESC;
+            ";
+
+        $stmt = $conn->prepare($tp_fila);
+        $stmt->execute();
+        $result_ticket_dia = $stmt->get_result();
+        while ($rowtd = mysqli_fetch_assoc($result_ticket_dia)) {
+            $queueNames[] = $rowtd['nome'];
+            $queueQuantities[] = $rowtd['quantidade_de_tickets'];
+        }
 
     }
 
@@ -181,6 +215,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <title>Dashboard Avançado</title>
     <link rel="stylesheet" href="./style/popup.css">
+    <link rel="stylesheet" href="./style/geral.css">
     <script src="./js/all.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -197,7 +232,6 @@
             </form>
         </div>
     </nav>
-
     <div class="container" id="printableArea">
         <h2>Dashboard Avançado Press Ticket</h2>
         <br><br>
@@ -218,19 +252,29 @@
             </div>
         </form>
         <br><br>
-
-        <div style="width: 100%; max-width: 800px; margin: 0 auto;">
-            <canvas id="ticketChart"></canvas>
+        <div style="display: flex;justify-content: center;" class="center">
+            <button class="btn btn-secondary" onclick="generatePDF()">Baixar Relatório</button>
         </div>
 
-        <div style="width: 100%; max-width: 800px; margin: 0 auto;">
+        <br><br>
+        <h3>Relação de Tickets Fechados</h3>
+        <div style="display: flex; justify-content: space-around; align-items: center;">
+            <div style="width: 50%;">
+                <canvas id="ticketChart"></canvas>
+            </div>
+            <div style="width: 50%; height: 480px;">
+                <canvas id="queuePieChart"></canvas>
+            </div>
+        </div>
+        <br>
+        <h3>Tickets Gerados por dia</h3>
+        <br>
+        <div style="width: 100%; margin: 0 auto;">
             <canvas id="ticketScatterChart"></canvas>
         </div>
 
         <br>
-        <div style="display: flex;justify-content: center;" class="center">
-            <button class="btn btn-secondary" onclick="generatePDF()">Baixar Relatório</button>
-        </div>
+        
 
         <br>
         <hr/>
@@ -238,8 +282,66 @@
             <b><p class="text-center text-muted">©<?php echo date('Y'); ?> PH Soluções</p></b>
         </footer>
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@1.1.0"></script>
+
+    <script>
+        var ctx2 = document.getElementById('queuePieChart').getContext('2d');
+var queuePieChart = new Chart(ctx2, {
+    type: 'pie',
+    data: {
+        labels: <?php echo json_encode($queueNames); ?>, // Tipos de filas
+        datasets: [{
+            data: <?php echo json_encode($queueQuantities); ?>, // Quantidade de tickets por tipo de fila
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)'
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            datalabels: {
+                color: 'black',
+                align: 'top',
+                anchor: 'top',
+                font: {
+                    weight: 'italic',
+                    size: 10
+                }
+            },
+            legend: {
+                position: 'top',
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        var label = context.label || '';
+                        var value = context.raw || 0;
+                        return label + ': ' + value + ' tickets';
+                    }
+                }
+            }
+        }
+    }
+});
+
+    </script>
 
     <script>
         var ctx = document.getElementById('ticketScatterChart').getContext('2d');

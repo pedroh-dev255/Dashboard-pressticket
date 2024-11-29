@@ -3,6 +3,7 @@
 body {
     font-family: 'Afacad Flux', sans-serif;
     background-color: rgb(255, 221, 221) !important;
+    background-image: linear-gradient( 135grad,rgb(182, 205, 255), rgb(182, 154, 226)); 
 }
 
 .navbar {
