@@ -92,7 +92,7 @@
         </form>
         <hr>
         <footer style="color: white; a { color: inherit; } " class="py-3 my-4">
-            <b><p class="text-center text-muted">©<?php echo date('Y'); ?> <a href="phsolucoes.tech">PH Soluções</a></p></b>
+            <b><p class="text-center text-muted">©<?php echo date('Y'); ?> <a href="https://phsolucoes.tech">PH Soluções</a></p></b>
         </footer>
     </div>
 <?php
