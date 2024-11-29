@@ -77,8 +77,7 @@
         <button onclick="closePopin()">Fechar</button>
     </div>
     
-</body>
-</html>
+
     <div class="page">
         <form action="./login.php" method="post" class="formLogin">
             <h1>LOGIN</h1>
@@ -90,15 +89,18 @@
             <input type="password" name="pass" required>
             
             <button type="submit" class="btn">Entrar</button>
-
         </form>
+        <hr>
+        <footer style="color: white; a { color: inherit; } " class="py-3 my-4">
+            <b><p class="text-center text-muted">©<?php echo date('Y'); ?> <a href="phsolucoes.tech">PH Soluções</a></p></b>
+        </footer>
     </div>
-    
-
-
 <?php
     if(isset($_SESSION['log'])){
         echo "<script >showPopin('".$_SESSION['log']."', '".$_SESSION['log1']."');</script>";
         unset($_SESSION['log'], $_SESSION['log1']);
     }
 ?>
+
+</body>
+</html>

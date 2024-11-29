@@ -95,3 +95,23 @@ body {
     background-color: #ff0676;
 
 }
+
+
+a:link {
+    color: inherit;
+ }
+ 
+ /* link que foi visitado */
+ a:visited {
+     color: inherit;
+ }
+ 
+ /* mouse over */
+ a:hover {
+     color: inherit;
+ }
+ 
+ /* link selecionado */
+ a:active {
+     color: inherit;
+ }
